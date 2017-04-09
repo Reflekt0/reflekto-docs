@@ -85,9 +85,44 @@ W momencie zbliżenia się użytkownika, następuje transmisja danych i wyświet
 	\label{lustro_on}
 \end{figure}
 
-\section{Opis aplikacji systemu nRF52 }
+\section{Opis aplikacji systemu nRF52 (stan na 9 kwietnia 2017) }
 
-\section{Opis aplikacji systemu iOS}
+\subsection{Włączenie urządzenia}
+Urządzenie po uruchomieniu inicjalizuje wszystkie niezbędne usługi: timer, uart, stos BLE, serwisy oraz obsługę wyświetlacza. Dalej rozpoczyna się rozgłaszanie (pod nazwą ,,Reflekto\_UART'') i urządzenie pozostaje w stanie oczekiwania aż do wyłączenia zasilania. 
+\subsection{Zasilanie}
+Ze względu na użycie wyświetlacza TFT, wymagane jest zasilanie przez zasilacz zewnętrzny bądź port USB (bateria pastylkowa nie pokrywa zapotrzebowania na prąd). Obecnie szacowany pobór energii w stanie aktywnym wynosi mniej niż 1W. W stanie nieaktywnym pobór energii przez wyświetlacz może zostać zredukowany do zera (sterowanie PWM), jednakże wymaga to wlutowania odpowiedniej zworki w płytkę wyświetlacza.
+
+\subsection{Sposób rozgłaszania}
+Do urządzenia w tym samym czasie może być podłączony jeden smartfon. W zależności od ustawień, 
+ może być on połączony do momentu zachowania bliskiego zasięgu (potencjalnie blokując innych użytkowników), \todo{Możliwe korzystanie przez kilku użytkowników jednocześnie} 
+lub rozłączać się od razu po przesłaniu informacji. 
+
+Układ rozgłasza się pod wcześniej zdefiniowaną nazwą i UUID, udostępniając jeden serwis, z charakterystyką ,,write'' oraz ,notify'' (obecnie niewykorzystana).
+
+\subsection{Realizacja komunikacji}
+Układ w momencie otrzymania danych wysyła je do komputera przez port szeregowy (w celu debugowania), oraz rzutuje je na wektor typu \textit{char}, który przekazywany jest do kolejnej funkcji realizującej umieszczenie danych na wyświetlaczu.
+
+Ze względu na ograniczenie ilości danych w pakiecie do 20 bajtów zastosowano specjalne kodowanie, gdzie pierwsze dwa bajty analizowane są w następujący sposób: 
+\begin{itemize}
+	\item bajt ,,0''
+	\subitem Wskazuje na typ otrzymanych danych (np. data, godzina, pogoda, kalendarz, e-mali) \todo{4 bity można użyć do ,,szyfrowania'' transmisji}
+	\item bajt ,,1''
+	\subitem 4 bity górne -- numer aktualnie otrzymanego pakietu
+	\subitem 4 bity dolne -- ilość wszystkich pakietów danego typu
+\end{itemize}
+Wynika z tego maksymalna długość przesyłanych danych jednego typu do 288 znaków. Podział na paczki realizowany jest przez aplikację na smartfonie. Założono takżę obsługę błędnych pakietów przez SoftDevice'a, dlatego nie uwzględnione zostały bajty na sumę CRC.
+
+\subsection{Umieszczanie informacji na wyświetlaczu}
+Po otrzymaniu wszystkich paczek danego typu, dane ,,drukowane'' są na wyświetlaczu (ze względu na metodę komunikacji niemożliwe jest przesłanie jednorazowo całej ramki obrazu). Wyświetlacz podzielony został na sekcje (od góry):
+\begin{itemize}
+	\item 20\% -- aktualna data i godzina
+	\item 20\% -- aktualna pogoda
+	\item 60\% -- kalendarz, czas dojazdu do pracy, emaile itd. wyświetlane cyklicznie bądź jednocześnie
+\end{itemize}
+
+\subsection{Konfiguracja}
+W planach jest obsługa danych konfiguracyjnych, które ustalałyby np. sposób wyświetlania informacji, lub działania układu w trybie niekatywnym.
+\section{Opis aplikacji systemu iOS (stan na 9 kwietnia 2017)}
 
 
 
