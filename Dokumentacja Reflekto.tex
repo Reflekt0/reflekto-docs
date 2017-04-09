@@ -87,9 +87,39 @@ W momencie zbliżenia się użytkownika, następuje transmisja danych i wyświet
 
 \section{Opis aplikacji systemu nRF52 }
 
-\section{Opis aplikacji systemu iOS}
+\section{Opis aplikacji systemu iOS (stan na 9 kwietnia 2017)}
 
+Aplikacja mobilna po uruchomieniu automatycznie rozpoznaje lokalizację użytkownika z dokładnością ok. 3km oraz próbuję nawiązać połączenie bluetooth z modułem bluetooth lustra. Aktualny wygląd aplikacji pokazany jest obrazie (Rys. \ref{ios_main_screen})
 
+\begin{figure}[H]
+	\includegraphics[width=0.5\textwidth,center]{ios_main_scrren.png}
+	\caption {Aktualny wygląd aplikacji}
+	\label{ios_main_screen}
+\end{figure}
 
+\subsection{Pobierane dane i sposób ich pobrania}
+Aplikacja pobiera dane asynchronicznie, komórki z danymi w aplikacji uzupełniają się od razu po pobraniu poszczególnej danej. Nie trzeba czekać na zaaktualizowanie interfejsu aż do momentu pobrania każdego elementu. Poniżej opis pobierych danych oraz w przypadku bardziej złożonych danych sposób ich pozyskania.
+
+\begin{itemize}
+\item Godzina
+\item Miejsce, pogoda -- na podstawie wyznaczonej lokalizacji telefon wysyła zapytanie do Dark Sky API podając w paraetrze m. in. długość oraz szerokość geograficzną. Otrzymany w odpowiedzi JSON parsowany jest na obiekt, z którego później wybierana jest temperatura. Miejsce wyznaczone jest również na podstawie szerokości i długości geograficznej używając wbudowanego  API Apple Maps.
+\item Imię -- imię użytkownika rozpoznawane jest automatycznie na podstawie nazwy urządzenia. Domyślnie nazwa urządzenia to np. ,,Michal's iPhone''. W przypadku innych wersji językowych nazwa urządzenia może być inna, więc metoda wykrywająca imie może nie zadziałać. Imię, które wykryjemy będzie jedynie propozycją podczas metody konfiguracji, jeśli użytkownik stwierdzi, że nie jest to zgodne z prawdą będzie mógł je ręcznie wpisać.
+\item Płeć -- wyznaczana jest na podstawie ostatniej litery imienia, również będzie możliwa zmiana podczas procesu konfiguracji.
+\item Pogoda, dod. -- pobierana z Dark Sky API
+\item Pogoda, rada -- pobierana z Dark Sky API
+\end{itemize}
+
+\subsection{Sposób działania}
+Po dotknięciu w poszczególną komórkę zostaje wygenerowany String z dodanymi na początku dwoma bajtami, które pozwalają systemowi wbudowanemu zidentyfikować rodzaj informacji, która jest mu wysyłana. Po stworzeniu odpowiednich danych następuje próba wysłania infomarcji. Wykonywana jest na osobym wątku, aby nie blokować interfejsu użytkonika.
+
+W dolnej części interfejsu zostało dodane pole tekstowe ułatwiające proces przygotowania systemu wbudowanego. Można dzięki niemu wpisać dowolną informację, w jego przypadku nie są dodawane dodatkowe dwa bajty na początku.
+
+\subsection{Planowany rozwój}
+
+Aplikacja zostanie rozbudowana o proces kofiguracji, który użytkownik będzie musiał przejść tylko za pierwszym razem. Następne uruchomienia nie będą już wymagana, aplikacja będzie działać w tle i na podstawie skanera bluetooth uruchamiać się w pobliżu lustra. Dane będą dzielone na paczki i wysyłane do modułu bluetooth lustra.
+
+Zostaną dodane kolejne dane pobierane z urządzenia, takie jak komplement generowany na podstawie płci lub informacje o nadchodzących wydarzeniach w kalendarzu.
+
+Dodatkowo aplikacja zostanie przepisana, tak aby używała bilioteki RxSwift, która umożliwa pisanie kodu w sposób reaktywny i funkcjonalny. Do niektórych funkcji dodane zostaną również testy jednostkowę, oraz jeśli czas na to pozwoli integracja z systemem Travis w celu zastosowania continous integration.
 	
 \end{document}
