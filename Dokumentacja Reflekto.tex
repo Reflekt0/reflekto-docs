@@ -19,6 +19,7 @@
 \usepackage{listings}
 \usepackage{float}
 \usepackage{fancyhdr}
+\usepackage{listing}
 
 %Nagłówek:
 \pagestyle{fancy}
@@ -30,6 +31,36 @@
 
 %\marginsize{left}{right}{top}{bottom}
 \marginsize{2.5cm}{2.5cm}{2.5cm}{2.5cm}
+\lstdefinelanguage{C}{
+	keywords={typeof, new, true, false, catch, function, return, null, catch, switch, var, if, in, while, do, else, case, break},
+	keywordstyle=\color{blue}\bfseries,
+	ndkeywords={class, export, boolean, throw, implements, import, this},
+	ndkeywordstyle=\color{darkgray}\bfseries,
+	identifierstyle=\color{black},
+	sensitive=false,
+	comment=[l]{//},
+	morecomment=[s]{/*}{*/},
+	commentstyle=\color{purple}\ttfamily,
+	stringstyle=\color{red}\ttfamily,
+	morestring=[b]',
+	morestring=[b]"
+}
+
+\lstset{
+	language=C,
+	backgroundcolor=\color{lightgray},
+	extendedchars=true,
+	basicstyle=\footnotesize\ttfamily,
+	showstringspaces=false,
+	showspaces=false,
+	numbers=left,
+	numberstyle=\footnotesize,
+	numbersep=9pt,
+	tabsize=2,
+	breaklines=true,
+	showtabs=false,
+	captionpos=b
+}
 
 \begin{document}
 
@@ -74,30 +105,32 @@ W momencie zbliżenia się użytkownika następuje transmisja danych i wyświetl
 
 \begin{figure}[H]
 	\includegraphics[width=0.6\textwidth,center]{mirror_on.png}
-	\caption {Lustro w stanie aktywnym}
+	\caption {Poglądowy rysunek lustra w stanie aktywnym}
 	\label{lustro_on}
 \end{figure}
 
-\section{Planowane możliwości personalizacji}
+\section{Możliwości personalizacji}
 \begin{figure}[H]
 	\includegraphics[width=0.9\textwidth,center]{dymki_kreski.png}
-	\caption {Proponowane możliwości personalizacji}
+	\caption {Poglądowy rysunek możliwości personalizacji}
 	\label{lustro_konf}
 \end{figure}
 
-\section{Opis aplikacji systemu nRF52 (stan na 9 kwietnia 2017) }
+\section{Opis aplikacji systemu wbudowanego nRF52}
 
 \subsection{Włączenie urządzenia}
-Urządzenie po uruchomieniu inicjalizuje wszystkie niezbędne usługi: timer, UART, stos BLE, serwisy oraz obsługę wyświetlacza. Dalej rozpoczyna się rozgłaszanie (pod nazwą ,,Reflekto\_UART'') i urządzenie pozostaje w stanie oczekiwania aż do wyłączenia zasilania. 
+Urządzenie po uruchomieniu inicjalizuje wszystkie niezbędne usługi: timery, stos BLE, serwisy oraz obsługę wyświetlacza. Dalej rozpoczyna się rozgłaszanie (pod nazwą ,,nRF\_Reflekto'') i urządzenie pozostaje w stanie oczekiwania aż do wyłączenia zasilania. 
 
 \subsection{Zasilanie}
-Ze względu na użycie wyświetlacza TFT, wymagane jest zasilanie przez zasilacz zewnętrzny bądź port USB (bateria pastylkowa nie pokrywa zapotrzebowania na prąd). Obecnie szacowany pobór energii w stanie aktywnym wynosi mniej niż 900mW. W stanie nieaktywnym pobór energii przez wyświetlacz może zostać zredukowany do zera (sterowanie PWM), jednakże wymaga to wlutowania odpowiedniej zworki w płytkę wyświetlacza.
+Ze względu na użycie wyświetlacza TFT, wymagane jest zasilanie przez zasilacz zewnętrzny bądź port USB (bateria pastylkowa nie pokrywa zapotrzebowania na prąd). Szacowany pobór energii w stanie aktywnym wynosi 400mW. W stanie nieaktywnym pobór energii przez wyświetlacz może zostać zredukowany do zera (sterowanie PWM), jednakże wymaga to wlutowania odpowiedniej zworki w płytkę wyświetlacza. W związku z tym zdecydowano o pozostawieniu przez cały czas aktywnego zegara, jako jedynej zawsze aktualnej informacji.
 
 \subsection{Sposób rozgłaszania}
-Do urządzenia w tym samym czasie może być podłączony jeden smartfon. W zależności od ustawień, 
- może być on połączony do momentu zachowania bliskiego zasięgu (potencjalnie blokując innych użytkowników), \todo{Możliwe korzystanie przez kilku użytkowników jednocześnie} lub rozłączać się od razu po przesłaniu informacji. 
+Do urządzenia w tym samym czasie może być podłączony jeden smartfon, ale z punktu widzenia użytkownika z lustra może korzystać kilka osób jednocześnie. Zostało to osiągnięte poprzez wprowadzenie 4-sekundowych slotów czasowych w przesyłaniu danych przez każdy smartfon. Wstępnie moc rozgłaszania została obniżona o 40dB (potrzebna jest późniejsza kalibracja w docelowym urządzeniu). Dzięki temu oszczędzana jest bateria w smartfonie jak i lustrze -- dane przesyłane są jak tylko lustro zostanie wykryte przez smartfona i nie jest wymagane ciągła aktywność z urządzeniem.
 
-Układ rozgłasza się pod wcześniej zdefiniowaną nazwą i UUID, udostępniając jeden serwis, z charakterystyką ,,write'' oraz ,notify'' (obecnie niewykorzystana).
+Układ rozgłasza się pod wcześniej zdefiniowaną nazwą i UUID: "this is reflekto", co w systemie szesnastkowym przedstawia się następująco:
+\begin{lstlisting}
+74686973-2069-73 20 72 65 66 6c 65 6b 74 6f
+\end{lstlisting}
 
 \subsection{Realizacja komunikacji}
 Układ w momencie otrzymania danych wysyła je do komputera przez port szeregowy (w celu debugowania), oraz rzutuje je na wektor typu \textit{char}, który przekazywany jest do kolejnej funkcji realizującej umieszczenie danych na wyświetlaczu.
