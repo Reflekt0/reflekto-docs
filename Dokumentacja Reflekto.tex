@@ -122,39 +122,79 @@ W momencie zbliżenia się użytkownika następuje transmisja danych i wyświetl
 Urządzenie po uruchomieniu inicjalizuje wszystkie niezbędne usługi: timery, stos BLE, serwisy oraz obsługę wyświetlacza. Dalej rozpoczyna się rozgłaszanie (pod nazwą ,,nRF\_Reflekto'') i urządzenie pozostaje w stanie oczekiwania aż do wyłączenia zasilania. 
 
 \subsection{Zasilanie}
-Ze względu na użycie wyświetlacza TFT, wymagane jest zasilanie przez zasilacz zewnętrzny bądź port USB (bateria pastylkowa nie pokrywa zapotrzebowania na prąd). Szacowany pobór energii w stanie aktywnym wynosi 400mW. W stanie nieaktywnym pobór energii przez wyświetlacz może zostać zredukowany do zera (sterowanie PWM), jednakże wymaga to wlutowania odpowiedniej zworki w płytkę wyświetlacza. W związku z tym zdecydowano o pozostawieniu przez cały czas aktywnego zegara, jako jedynej zawsze aktualnej informacji.
+Ze względu na użycie wyświetlacza TFT, wymagane jest zasilanie przez zasilacz zewnętrzny bądź port USB (bateria pastylkowa nie pokrywa zapotrzebowania na prąd). Szacowany pobór energii w stanie aktywnym wynosi 400mW. W stanie nieaktywnym pobór energii przez wyświetlacz może zostać zredukowany do zera (sterowanie PWM), jednakże wymaga to fizycznej ingerencji w płytkę wyświetlacza. W związku z tym zdecydowano o pozostawieniu przez cały czas aktywnego zegara, jako jedynej zawsze aktualnej informacji.
 
 \subsection{Sposób rozgłaszania}
-Do urządzenia w tym samym czasie może być podłączony jeden smartfon, ale z punktu widzenia użytkownika z lustra może korzystać kilka osób jednocześnie. Zostało to osiągnięte poprzez wprowadzenie 4-sekundowych slotów czasowych w przesyłaniu danych przez każdy smartfon. Wstępnie moc rozgłaszania została obniżona o 40dB (potrzebna jest późniejsza kalibracja w docelowym urządzeniu). Dzięki temu oszczędzana jest bateria w smartfonie jak i lustrze -- dane przesyłane są jak tylko lustro zostanie wykryte przez smartfona i nie jest wymagane ciągła aktywność z urządzeniem.
+Do urządzenia w tym samym czasie może być podłączony jeden smartfon, ale z punktu widzenia użytkownika z lustra może korzystać kilka osób jednocześnie. Zostało to osiągnięte poprzez wprowadzenie 4-sekundowych slotów czasowych w przesyłaniu danych przez każdy smartfon. Wstępnie moc rozgłaszania została obniżona o 40dB (potrzebna jest późniejsza kalibracja w docelowym urządzeniu). Dzięki temu oszczędzana jest bateria w smartfonie jak i lustrze -- dane przesyłane są jak tylko lustro zostanie wykryte przez smartfona i nie jest wymagane ciągła aktywność w tle z urządzeniem.
 
-Układ rozgłasza się pod wcześniej zdefiniowaną nazwą i UUID: "this is reflekto", co w systemie szesnastkowym przedstawia się następująco:
+Układ rozgłasza się pod wcześniej zdefiniowaną nazwą z dwoma servisami. Pierwszy posiada UUID ,,this is reflekto'' zapisane w systemie szesnastkowym (w celu unikalnej identyfikacji):
 \begin{lstlisting}
-74686973-2069-73 20 72 65 66 6c 65 6b 74 6f
+	74686973-2069-7320-7265-666C656b746F
 \end{lstlisting}
+Drugi to ustandaryzowana usługa czasu o UUID  0x1805 zaimplementowana w urządzeniu.
 
-\subsection{Realizacja komunikacji}
-Układ w momencie otrzymania danych wysyła je do komputera przez port szeregowy (w celu debugowania), oraz rzutuje je na wektor typu \textit{char}, który przekazywany jest do kolejnej funkcji realizującej umieszczenie danych na wyświetlaczu.
-
-Ze względu na ograniczenie ilości danych w pakiecie do 20 bajtów zastosowano specjalne kodowanie, gdzie pierwsze dwa bajty analizowane są w następujący sposób: 
+\subsection{Zaimplementowane servisy}
+W układzie zostały zaimplementowne cztery servisy \textit{Bluetooth Low Energy} których struktura i adresy są następujące:
 \begin{itemize}
-	\item bajt ,,0''
-	\subitem Wskazuje na typ otrzymanych danych (np. data, godzina, pogoda, kalendarz, e-mali) \todo{4 bity można użyć do ,,szyfrowania'' transmisji}
-	\item bajt ,,1''
-	\subitem 4 bity górne -- numer aktualnie otrzymanego pakietu
-	\subitem 4 bity dolne -- ilość wszystkich pakietów danego typu
+	\item 0x1805 -- Usługa aktualnego czasu
+	\subitem 0x2A2B -- read/write -- czas w systemie unixowym
+	\item 0x0010 -- Usługa pogodowa
+	\subitem 0x0011 -- aktualne miasto, temperatura i ikona pogody
+	\subitem 0x0012 -- aktualna prędkość wiatru
+	\subitem 0x0013 -- porada pogodowa
+	\item 0x0020 -- Usługa osobistych informacji
+	\subitem 0x0021 -- następne wydarzenie z kalendarza
+	\subitem 0x0022 -- informacja o nieodczytanych mailach
+	\subitem 0x0023 -- prognozowany czas dojazdu do pracy
+	\subitem 0x0024 -- imię użytkownika
+	\subitem 0x0025 -- powitanie użytkownika
+	\subitem 0x0026 -- komplement
+	\item  0xDEAD -- Usługa konfiguracyjna
+	\subitem 0xBEEF -- zapis informacji konfiguracyjnych
 \end{itemize}
-Wynika z tego maksymalna długość przesyłanych danych jednego typu do 288 znaków (16 pakietów po 18 użytecznych bajtów). Podział na paczki realizowany jest przez aplikację na smartfonie. Założono także obsługę błędnych pakietów przez SoftDevice'a, dlatego nie uwzględnione zostały bajty na sumę CRC.
+\subsection{Obsługa odbieranych danych}
+
+Każda z wyświetlanych informacji przechowywana jest jako struktura zawierająca:
+\begin{itemize}
+	\item łańcuch znaków o ustalonej wcześniej długości (80 znaków)
+	\item licznik ilości zapisanych znaków
+	\item flagę mówiącą czy odbiór danych dla tego typu informacji został zakończony (czy jest możliwość poprawnego wyświetlenia całej informacji)
+	\item flagę informującą czy informacja zmieniła się od ostatnio otrzymanej (czy jest konieczność jej ponownego wyświetlenia)
+\end{itemize}
+
+Z racji narzuconego limitu wielkości jednego pakietu \textit{BLE} do 20 bajtów, konieczne jest sklejanie poszczególnych paczek do jednego ciągu znaków. W tym celu skorzystano ze znaków \textit{ASCII}  oznaczonych jako \textit{STX -- Start of text} i \textit{ETX -- End of text}, które przedstawiają się formacie dziesiętnym jako cyfry $2$ i $3$.
+
+W momencie otrzymania zapisu na jedną z charakterystyk obsługujących dane tekstowe, event przekazywany jest do funkcji łączącej dane. W przypadku otrzymania pakietu zaczynającego się od \textit{STX}, flagi oraz licznik znaków są zerowane i następuje zapis do łańcucha znaków. Porównywany jest otrzymany łańcuch z tym zapisanym poprzednio, dzięki temu wiadomo czy konieczne jest ponowne wyświetlenie danych. Odbiór kończy się w przypadku otrzymania znaku \textit{ETX} (na dowolnym miejscu). Ustawiana jest wtedy flaga zakończenia.
+
+Przykładowo porada pogodowa ,,It will rain till tomorrow morning'' zostanie podzielona w następujący sposób:
+\begin{enumerate}
+	\item \textit{STX}It will rain till t
+	\item omorrow morning\textit{ETX}
+\end{enumerate}
+
+Wielodniowe testy nie wykazały żadnych błędów przy stosowaniu powyższej metody transmisji i obsługi danych.
+
+\subsection{Zabezpieczenia i charakterystyka konfiguracyjna}
+Przy podłączeniu dowolnego urządzenia uruchamiany jest timer, który zezwala na pozostanie połączonym maksymalnie przez dwie sekundy. W praktyce pozwala to jedynie na odkrycie struktury urządzenia. W przypadku nie wpisania ustalonego hasła na charakterystykę konfiguracyjną, lub wpisaniu jakichkolwiek danych do systemu lustra przed podaniem go, połączenie zostaje natychmiast zerwane. Wpisanie hasła zatrzymuje timer i powoduje oczekiwanie na dane (np. w przypadku dłuższego niż zwykle pobierania danych z API).
+
+Ze względu na optymalizację poboru energii smartfona, wykorzystywane jest specjalne hasło pozwalające na natychmiastowe rozłączenie z urządzeniem z ominięciem ograniczeń systemowych.
 
 \subsection{Umieszczanie informacji na wyświetlaczu}
-Po otrzymaniu wszystkich paczek danego typu, dane ,,drukowane'' są na wyświetlaczu (ze względu na metodę komunikacji niemożliwe jest przesłanie jednorazowo całej ramki obrazu). Wyświetlacz podzielony został na sekcje (od góry):
+Ze względu na rodzaj wyświetlacza oraz użytą komunikację do przesyłu danych po \textit{SPI}, dostęp do wyświetlacza odbywa się pixel po pixelu. By zachować możliwość wybiórczego umieszczania i czyszczenia informacji, wyświetlacz został podzielony na sekcje:
 \begin{itemize}
-	\item 20\% -- aktualna data i godzina
-	\item 20\% -- aktualna pogoda
-	\item 60\% -- kalendarz, czas dojazdu do pracy, emaile itd. wyświetlane cyklicznie bądź jednocześnie
+	\item Sekcja Czasu -- odświeżana selektywnie (sekundy co sekundę, minuty i godziny co 60 sekund, data w momencie zmiany dnia tygodnia)
+	\item Sekcja Pogody -- odświeżana pojedynczo w przypadku zmiany otrzymanych danych, obejmuje zbiór 10 ikon pogodowych drukowanych pixel po pixelu, aktualne miasto, temperaturę, wiatr i poradę pogodową
+	\item Sekcja Powitania i Komplementu -- odświeżana co 4 sekundy w przypadku obecności kilku użytkowników jednocześnie
+	\item Sekcje e-mail, czasu dojazdu i kalendarza -- odświeżane w przypadku zmiany	
 \end{itemize}
 
-\subsection{Planowany rozwój}
-W planach jest obsługa danych konfiguracyjnych, które ustalałyby m.in. sposób wyświetlania informacji lub działania układu w trybie nieaktywnym. Dodatkowo w przypadku pomyślnego ukończenia projektu przed czasem, możliwe jest ponowne jego napisanie bez użycia protokołu UART, co zmniejszyłoby narzut na mikroprocesor.
+Wyświetlacz jest czyszczony w całości 30 sekund po rozłączeniu się ostatniego użytkownika. Odświeżanie zegara pozostaje wtedy bez zmian. Wygląd wyświetlacza przedstawia rysunek \ref{nrf_interface}.
+
+\begin{figure}[H]
+	\includegraphics[width=0.7\textwidth,center]{nrf_interface}
+	\caption {Interfejs lustra}
+	\label{nrf_interface}
+\end{figure}
 
 \section{Opis aplikacji systemu iOS (stan na 9 kwietnia 2017)}
 
