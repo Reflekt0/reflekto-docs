@@ -117,7 +117,7 @@ W momencie zbliżenia się użytkownika następuje transmisja danych i wyświetl
 \end{figure}
 
 \section{Opis aplikacji systemu wbudowanego nRF52}
-
+ftowy
 \subsection{Włączenie urządzenia}
 Urządzenie po uruchomieniu inicjalizuje wszystkie niezbędne usługi: timery, stos BLE, serwisy oraz obsługę wyświetlacza. Dalej rozpoczyna się rozgłaszanie (pod nazwą ,,nRF\_Reflekto'') i urządzenie pozostaje w stanie oczekiwania aż do wyłączenia zasilania. 
 
@@ -156,41 +156,127 @@ Po otrzymaniu wszystkich paczek danego typu, dane ,,drukowane'' są na wyświetl
 \subsection{Planowany rozwój}
 W planach jest obsługa danych konfiguracyjnych, które ustalałyby m.in. sposób wyświetlania informacji lub działania układu w trybie nieaktywnym. Dodatkowo w przypadku pomyślnego ukończenia projektu przed czasem, możliwe jest ponowne jego napisanie bez użycia protokołu UART, co zmniejszyłoby narzut na mikroprocesor.
 
-\section{Opis aplikacji systemu iOS (stan na 9 kwietnia 2017)}
+\section{Opis aplikacji systemu iOS}
 
-Aplikacja mobilna po uruchomieniu automatycznie rozpoznaje lokalizację użytkownika z dokładnością ok. 3km oraz próbuje nawiązać połączenie bluetooth z modułem lustra. Aktualny wygląd aplikacji pokazany jest obrazie (Rys. \ref{ios_main_screen})
+Aplikacja mobilna po uruchomieniu sprawdza, czy został już przeprowadzny proces konfiguracji. Jeśli nie, nastąpi jej automatyczne włączenie. Użytownik prowadzony jest kolejno przez kilka ekranów, na których musi udzielić odpowiedzi na kilka pytań.
 
+\subsection{Konfiguracja}
+
+\begin{enumerate}
+	\item  Konfiguracja rozpoczyna się od powitania użytkownika oraz poinformowania go o wymaganym procesie konfiguracji. (Rys. \ref{setup1})
+	\begin{figure}[H]
+		\includegraphics[width=0.3\textwidth,center]{ios-screens/setup1.png}
+		\caption {Wstęp do konfiguracji}
+		\label{setup1}
+	\end{figure}
+
+	\item Następnie użytkownik proszony jest o podanie swojego imienia. Będzie ono użytę później, do wyświetlenia odpowiedniego powitania na lustrze. Obok imienia pojawi się również tekst zależny od pory dnia. (Rys. \ref{setup2})
+	\begin{figure}[H]
+	\includegraphics[width=0.3\textwidth,center]{ios-screens/setup2.png}
+	\caption {Pobranie imienia}
+	\label{setup2}
+	\end{figure}
+
+	\item Kolejnym krokiem jest wybór płci. Dzięki jej znajomości generowany jest jeden z wielu komplementów na temat użytkownika lustra. (Rys. \ref{setup3})
+	\begin{figure}[H]
+	\includegraphics[width=0.3\textwidth,center]{ios-screens/setup3.png}
+	\caption {Pobranie płci}
+	\label{setup3}
+	\end{figure}
+
+\item Czwarty ekran wyświetla trzy przyciski, dzięki którym użytkownik zezwala aplikacja na dostęp do określonych danych w swoim telefonie. Jest to niezbędny krok z powodu zabezpieczeń użytych w iOS. Po przekazaniu wszystkich zgód ekran automatycznie przechodzi do kolejnego, nie ma potrzeby zatwierdzania. (Rys. \ref{setup4})
 \begin{figure}[H]
-	\includegraphics[width=0.4\textwidth,center]{ios_main_scrren.png}
-	\caption {Aktualny wygląd aplikacji}
-	\label{ios_main_screen}
+	\includegraphics[width=0.3\textwidth,center]{ios-screens/setup4.png}
+	\caption {Prośba o zezwolenia}
+	\label{setup4}
 \end{figure}
 
+\item Ostatnim krokiem jest wskazanie aplikacji miejsca zamieszkania oraz pracy. Użyta została do tego mapa, która ułatwia ten proces. Automatycznie po wejściu w ekran pobierana jest lokalizaja użytkownika i wskazywane jest aktualne miejsce, w którym się znajduję. (Rys. \ref{setup5}) (Rys. \ref{setup6})
+\begin{figure}[H]
+	\includegraphics[width=0.3\textwidth,center]{ios-screens/setup5.png}
+	\caption {Wskazanie na mapie miejsce zamieszkania}
+	\label{setup5}
+\end{figure}
+\begin{figure}[H]
+	\includegraphics[width=0.3\textwidth,center]{ios-screens/setup6.png}
+	\caption {Wskazanie na mapie miejsce pracy}
+	\label{setup6}
+\end{figure}
+
+\item Po wskazaniu miejsca zamieszkania i pracy aplikacja pokazuje ekran, w którym informuje o zakończeniu procesu konfiguracji. Naciśnięcie przycisku powoduje przejście do ekranu głównego. (Rys. \ref{setup7})
+\begin{figure}[H]
+	\includegraphics[width=0.3\textwidth,center]{ios-screens/setup7.png}
+	\caption {Potwierdzenia zakończenia procesu konfiguracji}
+	\label{setup7}
+\end{figure}
+
+\end{enumerate}
+
+
+\subsection{Ekran główny}
+Po zakończeniu procesu konfiguracji lub każdorazowym późniejszym wejściu w aplikację użytkownikowi ukazuję się ekran główny (Rys. \ref{main_ios}). Znajdują się na nim przyciski do włączenia skanera Bluetooth, wyłączenia go oraz do przeprowadzenia procesu konfiguracji ponownie. Przyciski do włączania i wyłączania skanera są niezbędne, aby aplikacja przeszła review podczas umieszczania jej w AppStore. Po włączeniu skanera, można już wyjść z aplikacji lub zablokować ekran - aplikacja będzie cały czas działała w tle.
+
+\begin{figure}[H]
+	\includegraphics[width=0.3\textwidth,center]{ios-screens/main.png}
+	\caption {Ekran główny}
+	\label{main_ios}
+\end{figure}
+
+\subsection{Działanie w tle}
+Z powodu bardzo restrykcyjnego podejścia systemu iOS do aplikacji działających w tle została ona maksymalnie zoptymalizowana, aby zużywała jak najmniej zasobów. Nadajnik Bluetooth w lustrze rozgłasza swoje pakiety z odpowienio niską mocą, aby połączenie odbywało się tylko wtedy, gdy lustro faktycznie jest w pobliżu telefonu. Dodatkowo Informacje pobierane z API są cachowane w celu optymalizacji zużycia energii. Po wykryciu nadajnika, aplikacja ma 10 sekund na połączenie się z lustrem oraz pobranie wszystkich danych. Aplikacja przed rozpoczęciem kolejnego skanowania oczekuje 4 sekundy po rozłączeniu, dzięki czemu powstaje okno czasowe, podczas którego kolejne urządzenie w zasięgu ma szansę na połączenie i wysłanie swoich informacji.
+
+\subsection{Połączenie oraz problem długiego czasu rozłączania w iOS}
+Po połączeniu z lustrem, aplikacja ma 2 sekundy na przesłanie odpowiedniego ciągu bajtów do charakterystyki konfiguracyjnej. Jeśli tego nie zrobi zostanie automatycznie rozłączona, a żadne dane przez nią przesłane nie zostaną wyświetlone na lustrze. Dodając do tego bardzo słabą moc nadajnika całkowicie zabezpiecza to możliwość nieautoryzowanego użycia lustra. Znanym problem, który występuję w systemie iOS jest jego czas rozłączania się z urządzeniem. Po wydaniu komendy rozłączenia nie jest to robione natychmiastowo, lecz dopiero po około 7 sekundach. Rozwiązaliśmy ten problem wpisaniem do charakterystyki konfiguracyjnej odpowiedniego ciągu bajtów, który zaraz po ich otrzymaniu rozłącza urządzenie. Rozłącznie po stronie sprzętu realizowane jest natychmiast, stąd nie występuje problem długiego rozłączania.
+
+\subsection{Programowanie funkcyjne}
+Aplikacja pobiera dane asynchronicznie, jest to wykonane w kodzie w bardzo schludny sposób dzięki zastosowaniu programowania funkcyjnego. Wykonane zostało to z użyciem biblioteki RxSwift. Poniżej fragment kodu ilustrujący, jak łatwo połączyć kilka różnych informacji pobieranych asynchroniczne w jeden element, który można przesłać do urządzenia. Reactive Functional Programming to w ostatnich czasach bardzo popularne i pożadne podejście podczas programowania aplikacji pobilnych.
+
+\begin{lstlisting}
+Observable.zip(
+	 DataManager.timestamp,
+	 DataManager.weather,
+	 DataManager.nextEvent, 
+	 DataManager.name,
+	 DataManager.greeting, 
+	 DataManager.compliment, 
+	 DataManager.unreadMailsCount, 
+	 DataManager.travelToWorkTime)
+	  	.subscribe(onNext: { [weak self] 
+	  						(timestamp, weather, nextEvent, name, greeting,
+	  						compliment, unreadMailsCount, travelWorkTime) in
+	  							//wyslanie danych do lustra
+\end{lstlisting}
+
 \subsection{Pobierane dane i sposób ich pobrania}
-Aplikacja pobiera dane asynchronicznie, komórki z danymi w aplikacji uzupełniają się od razu po pobraniu poszczególnej danej. Nie trzeba czekać na zaktualizowanie interfejsu aż do momentu pobrania każdego elementu. Poniżej opis pobieranych danych oraz w przypadku bardziej złożonych informacji sposób ich pozyskania.
 
 \begin{itemize}
 	\item Godzina
 	\item Miejsce, pogoda -- na podstawie wyznaczonej lokalizacji telefon wysyła zapytanie do Dark Sky API podając w parametrze m. in. długość oraz szerokość geograficzną. Otrzymany w odpowiedzi JSON parsowany jest na obiekt, z którego później wybierana jest temperatura. Miejsce wyznaczone jest również na podstawie szerokości i długości geograficznej używając wbudowanego  API Apple Maps.
-	\item Imię -- imię użytkownika rozpoznawane jest automatycznie na podstawie nazwy urządzenia. Domyślnie ustawiona nazwa to np. ,,Michal's iPhone'' dla języka angielskiego lub ,,iPhone(Michał)'' dla języka polskiego. W przypadku innych wersji językowych nazwa urządzenia może być inna, więc metoda wykrywająca imię może nie zadziałać. Imię, które wykryjemy będzie jedynie propozycją podczas metody konfiguracji, jeśli użytkownik stwierdzi, że nie jest ono zgodne z prawdą będzie mógł je ręcznie wpisać.
-	\item Płeć -- wyznaczana jest na podstawie ostatniej litery imienia, również będzie możliwa jej zmiana podczas procesu konfiguracji.
-	\item Pogoda, dod. -- pobierana z Dark Sky API
-	\item Pogoda, rada -- pobierana z Dark Sky API
+	\item Wiatr -- pobierana z Dark Sky API
+	\item Pogoda - dodatkowa informacja. -- pobierana z Dark Sky API
+	\item Powitanie
+	\item Imię
+	\item Komplement
+	\item Czas dojazdu do pracy -- wyznaczany na podstawie prawdziwego ruchu na ulicach w aktualnym momencie
+	\item Ilość nieodczytanych mail
+	\item Następne wydarzenie w kalendarzu
+	
 \end{itemize}
 
-\subsection{Sposób działania}
-Po dotknięciu w poszczególną komórkę zostaje wygenerowany \textit{string} z dodanymi na początku dwoma bajtami, które pozwalają systemowi wbudowanemu zidentyfikować rodzaj informacji, która jest mu wysyłana. Po stworzeniu odpowiednich danych następuje próba wysłania informacji. Wykonywana jest na osobnym wątku, aby nie blokować interfejsu użytkownika.
+\subsection{Testy jednostkowe}
+Jednym z trudniejszych algorytmów zastsowanych w aplikacji jest algorytm podziału danych na paczki. Z tego powodu zostały napisane do niego testy jednostkowe a sam algorytm powstał dzięki TDD (Test Driven Development)
 
-W dolnej części interfejsu zostało dodane pole tekstowe ułatwiające proces przygotowania systemu wbudowanego. Można dzięki niemu wpisać dowolną informację, w jego przypadku nie są dodawane dodatkowe dwa bajty na początku.
+\section{Sposób replikacji}
 
-\subsection{Planowany rozwój}
+\subsection{iOS}
+Po sklonowaniu repozytorium z brancha master, należy w konsoli przejść do folderu z projektem oraz uruchomić komendę 
+\begin{lstlisting}
+pod install
+\end{lstlisting}
+Jeśli komenda nie jest dostępna należy zainstalować oprogramowanie CocoaPods
 
-Aplikacja zostanie rozbudowana o proces konfiguracji, który użytkownik będzie musiał przejść tylko za pierwszym razem. Następne uruchomienia nie będą już wymagane, aplikacja będzie działać w tle i na podstawie skanera bluetooth uruchamiać się w pobliżu lustra. Dane będą dzielone na paczki i wysyłane do modułu bluetooth lustra.
-
-Zostaną dodane kolejne dane pobierane z urządzenia, takie jak komplement generowany na podstawie płci lub informacje o nadchodzących wydarzeniach w kalendarzu.
-
-Dodatkowo aplikacja zostanie przepisana, tak aby używała biblioteki RxSwift, która umożliwia pisanie kodu w sposób reaktywny i funkcjonalny. Do niektórych funkcji dodane zostaną również testy jednostkowe, oraz jeśli czas na to pozwoli integracja z systemem Travis w celu zastosowania continous integration.
-	
+\subsection{Embedded}
+Tutaj to pan kopiujesz hexa i działa, heja, dawać iPada.
 	
 \section{Podsumowanie}
 	Projekt rozwijany jest z użyciem systemu kontroli wersji GitHub. Aktualne postępy dosępne są pod adresem: \url{https://github.com/Solstico}
