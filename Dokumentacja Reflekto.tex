@@ -179,7 +179,7 @@ Przy podłączeniu dowolnego urządzenia uruchamiany jest timer, który zezwala 
 Ze względu na optymalizację poboru energii smartfona, wykorzystywane jest specjalne hasło (\textit{666}) pozwalające na natychmiastowe rozłączenie z urządzeniem z pominięciem ograniczeń czasowych systemu iOS.
 
 \subsection{Umieszczanie informacji na wyświetlaczu}
-Ze względu na rodzaj wyświetlacza oraz użytą komunikację do przesyłu danych po \textit{SPI}, dostęp do wyświetlacza odbywa się pixel po pixelu. By zachować możliwość wybiórczego umieszczania i czyszczenia informacji, wyświetlacz został podzielony na sekcje:
+W projekcie został wykorzystany wyświetlacz 2.8" TFT firmy Adafruit. Jest on kompatybilny z układem złącz ,,Arduino Shield'' i wykorzystuje sterownik ILI9341. Ze względu na rodzaj wyświetlacza oraz użytą komunikację do przesyłu danych po \textit{SPI}, dostęp do wyświetlacza odbywa się pixel po pixelu. By zachować możliwość wybiórczego umieszczania i czyszczenia informacji, wyświetlacz został podzielony na sekcje:
 \begin{itemize}
 	\item Sekcja Czasu -- odświeżana selektywnie (sekundy co sekundę, minuty i godziny co 60 sekund, data w momencie zmiany dnia tygodnia)
 	\item Sekcja Pogody -- odświeżana pojedynczo w przypadku zmiany otrzymanych danych, obejmuje zbiór 10 ikon pogodowych drukowanych pixel po pixelu, aktualne miasto, temperaturę, wiatr i poradę pogodową
@@ -189,10 +189,10 @@ Ze względu na rodzaj wyświetlacza oraz użytą komunikację do przesyłu danyc
 
 Wyświetlacz jest czyszczony w całości 30 sekund po rozłączeniu się ostatniego użytkownika. Odświeżanie zegara pozostaje wtedy bez zmian. 
 
-Wygląd wyświetlacza przedstawia rysunek \ref{nrf_interface}. Po umieszczeniu wyświetlacza za szybą pokrytą specjalną folią, po stronie użytkownika widoczne są dane wyświetlone białym kolorem.
+Wygląd wyświetlacza przedstawia rysunek \ref{nrf_interface}. Po umieszczeniu wyświetlacza za szybą pokrytą specjalną folią, po stronie użytkownika widoczne są dane wyświetlone białym kolorem i jego odbicie. Idealnym rozwiązaniem w przypadku dalszego rozwoju projektu byłoby skorzystanie z wyświetlacza typu OLED, który cechuje się większym kontrastem.
 
 \begin{figure}[H]
-	\includegraphics[width=0.7\textwidth,center]{nrf_interface}
+	\includegraphics[width=0.64\textwidth,center]{nrf_interface}
 	\caption {Interfejs lustra}
 	\label{nrf_interface}
 \end{figure}
@@ -322,8 +322,11 @@ s132_nrf52_4.0.2_softdevice.hex
 \end{lstlisting}
 Inną możliwością jest własnoręczne skompilowanie plików źródłowych. Projekt rozwijany był z użyciem IDE Segger Embedded Studio 3.12. Po pobraniu repozytorium wystarczy uruchomić plik projektu
 \textit{nRF\_Reflekto.emProject }i wybrać z menu \textit{Build/Build and run}. Dodatkowo z użyciem tego programu mamy możliwość podłączenia debuggera korzystającego z RTT i otrzymanie logów podczas pracy urządzenia.
+Po wgraniu oprogramowania, urządzenie uruchamia się automatycznie.
 
 \section{Podsumowanie}
+Aplikacja systemu wbudowanego korzysta z nRF SDK w wersji 13. Aplikacja mobilna sprawdzona i wykonana została pod systemem w iOS w wersji 10.3.2. 
+
 Projekt rozwijany był z użyciem systemu kontroli wersji GitHub. Wszystkie postępy prac dostępne są pod adresem: \url{https://github.com/Solstico}
 	
 	
