@@ -312,7 +312,7 @@ pod install
 \end{lstlisting}
 Jeśli komenda nie jest dostępna należy zainstalować oprogramowanie CocoaPods
 
-\subsection{Embedded}
+\subsection{nRF 52}
 Najprostszym sposobem umieszczenia oprogramowania na DevKicie nRF52 jest skopiowanie pliku \textit{nRF\_Reflekto.hex} do urządzenia J-LINK wyświetlonego przez komputer. Folder z wygenerowanymi plikami został specjalnie pozostawiony w repozytorium: \begin{lstlisting}
 /reflekto-embedded/nRF_Reflekto_Services/Output/nrf52832_xxaa/Exe/
 \end{lstlisting} 
@@ -321,7 +321,7 @@ Wymagane jest wcześniejsze posiadanie zainstalowanego SoftDevice na płytce. Mo
 s132_nrf52_4.0.2_softdevice.hex
 \end{lstlisting}
 Inną możliwością jest własnoręczne skompilowanie plików źródłowych. Projekt rozwijany był z użyciem IDE Segger Embedded Studio 3.12. Po pobraniu repozytorium wystarczy uruchomić plik projektu
-\textit{nRF\_Reflekto.emProject }i wybrać z menu \textit{Build/Build and run}.
+\textit{nRF\_Reflekto.emProject }i wybrać z menu \textit{Build/Build and run}. Dodatkowo z użyciem tego programu mamy możliwość podłączenia debuggera korzystającego z RTT i otrzymanie logów podczas pracy urządzenia.
 
 \section{Podsumowanie}
 Projekt rozwijany był z użyciem systemu kontroli wersji GitHub. Wszystkie postępy prac dostępne są pod adresem: \url{https://github.com/Solstico}
