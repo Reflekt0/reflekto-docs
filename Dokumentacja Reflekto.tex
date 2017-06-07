@@ -176,7 +176,7 @@ Wielodniowe testy nie wykazały żadnych błędów przy stosowaniu powyższej me
 \subsection{Zabezpieczenia i charakterystyka konfiguracyjna}
 Przy podłączeniu dowolnego urządzenia uruchamiany jest timer, który zezwala na pozostanie połączonym maksymalnie przez dwie sekundy. W praktyce pozwala to jedynie na odkrycie struktury urządzenia. W przypadku nie wpisania ustalonego hasła (\textit{001220}) na charakterystykę konfiguracyjną, lub wpisaniu jakichkolwiek danych do systemu lustra przed podaniem go, połączenie zostaje natychmiast zerwane. Wpisanie hasła zatrzymuje timer i powoduje oczekiwanie na dane (np. w przypadku dłuższego niż zwykle pobierania danych z API).
 
-Ze względu na optymalizację poboru energii smartfona, wykorzystywane jest specjalne hasło pozwalające na natychmiastowe rozłączenie z urządzeniem z ominięciem ograniczeń systemu iOS.
+Ze względu na optymalizację poboru energii smartfona, wykorzystywane jest specjalne hasło (\textit{666}) pozwalające na natychmiastowe rozłączenie z urządzeniem z pominięciem ograniczeń czasowych systemu iOS.
 
 \subsection{Umieszczanie informacji na wyświetlaczu}
 Ze względu na rodzaj wyświetlacza oraz użytą komunikację do przesyłu danych po \textit{SPI}, dostęp do wyświetlacza odbywa się pixel po pixelu. By zachować możliwość wybiórczego umieszczania i czyszczenia informacji, wyświetlacz został podzielony na sekcje:
@@ -187,7 +187,9 @@ Ze względu na rodzaj wyświetlacza oraz użytą komunikację do przesyłu danyc
 	\item Sekcje e-mail, czasu dojazdu i kalendarza -- odświeżane w przypadku zmiany	
 \end{itemize}
 
-Wyświetlacz jest czyszczony w całości 30 sekund po rozłączeniu się ostatniego użytkownika. Odświeżanie zegara pozostaje wtedy bez zmian. Wygląd wyświetlacza przedstawia rysunek \ref{nrf_interface}.
+Wyświetlacz jest czyszczony w całości 30 sekund po rozłączeniu się ostatniego użytkownika. Odświeżanie zegara pozostaje wtedy bez zmian. 
+
+Wygląd wyświetlacza przedstawia rysunek \ref{nrf_interface}. Po umieszczeniu wyświetlacza za szybą pokrytą specjalną folią, po stronie użytkownika widoczne są dane wyświetlone białym kolorem.
 
 \begin{figure}[H]
 	\includegraphics[width=0.7\textwidth,center]{nrf_interface}
