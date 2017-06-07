@@ -117,15 +117,14 @@ W momencie zbliżenia się użytkownika następuje transmisja danych i wyświetl
 \end{figure}
 
 \section{Opis aplikacji systemu wbudowanego nRF52}
-ftowy
 \subsection{Włączenie urządzenia}
 Urządzenie po uruchomieniu inicjalizuje wszystkie niezbędne usługi: timery, stos BLE, serwisy oraz obsługę wyświetlacza. Dalej rozpoczyna się rozgłaszanie (pod nazwą ,,nRF\_Reflekto'') i urządzenie pozostaje w stanie oczekiwania aż do wyłączenia zasilania. 
 
 \subsection{Zasilanie}
-Ze względu na użycie wyświetlacza TFT, wymagane jest zasilanie przez zasilacz zewnętrzny bądź port USB (bateria pastylkowa nie pokrywa zapotrzebowania na prąd). Szacowany pobór energii w stanie aktywnym wynosi 400mW. W stanie nieaktywnym pobór energii przez wyświetlacz może zostać zredukowany do zera (sterowanie PWM), jednakże wymaga to fizycznej ingerencji w płytkę wyświetlacza. W związku z tym zdecydowano o pozostawieniu przez cały czas aktywnego zegara, jako jedynej zawsze aktualnej informacji.
+Ze względu na użycie wyświetlacza TFT, wymagane jest zasilanie przez zasilacz zewnętrzny bądź port USB (bateria pastylkowa nie pokrywa zapotrzebowania na prąd). Szacowany pobór energii w stanie aktywnym wynosi 400mW. W stanie nieaktywnym pobór energii przez wyświetlacz może zostać zredukowany do zera (sterowanie PWM), jednakże wymaga to fizycznej ingerencji w płytkę wyświetlacza. W związku z tym zdecydowano o pozostawieniu przez cały czas aktywnego zegara, jako zawsze aktualnej informacji.
 
 \subsection{Sposób rozgłaszania}
-Do urządzenia w tym samym czasie może być podłączony jeden smartfon, ale z punktu widzenia użytkownika z lustra może korzystać kilka osób jednocześnie. Zostało to osiągnięte poprzez wprowadzenie 4-sekundowych slotów czasowych w przesyłaniu danych przez każdy smartfon. Wstępnie moc rozgłaszania została obniżona o 40dB (potrzebna jest późniejsza kalibracja w docelowym urządzeniu). Dzięki temu oszczędzana jest bateria w smartfonie jak i lustrze -- dane przesyłane są jak tylko lustro zostanie wykryte przez smartfona i nie jest wymagane ciągła aktywność w tle z urządzeniem.
+Do urządzenia w tym samym czasie może być podłączony jeden smartfon, ale z punktu widzenia użytkownika z lustra może korzystać kilka osób jednocześnie. Zostało to osiągnięte poprzez wprowadzenie 4-sekundowych slotów czasowych w przesyłaniu danych przez każdy smartfon. Wstępnie moc rozgłaszania została obniżona o 30dB (potrzebna jest późniejsza kalibracja w docelowym urządzeniu). Dzięki temu oszczędzana jest bateria w smartfonie jak i lustrze -- dane przesyłane są jak tylko lustro zostanie wykryte przez smartfona i nie jest wymagane ciągła aktywność w tle z urządzeniem.
 
 Układ rozgłasza się pod wcześniej zdefiniowaną nazwą z dwoma servisami. Pierwszy posiada UUID ,,this is reflekto'' zapisane w systemie szesnastkowym (w celu unikalnej identyfikacji):
 \begin{lstlisting}
@@ -156,7 +155,7 @@ W układzie zostały zaimplementowne cztery servisy \textit{Bluetooth Low Energy
 
 Każda z wyświetlanych informacji przechowywana jest jako struktura zawierająca:
 \begin{itemize}
-	\item łańcuch znaków o ustalonej wcześniej długości (80 znaków)
+	\item łańcuch znaków o ustalonej wcześniej długości (100 znaków)
 	\item licznik ilości zapisanych znaków
 	\item flagę mówiącą czy odbiór danych dla tego typu informacji został zakończony (czy jest możliwość poprawnego wyświetlenia całej informacji)
 	\item flagę informującą czy informacja zmieniła się od ostatnio otrzymanej (czy jest konieczność jej ponownego wyświetlenia)
@@ -175,9 +174,9 @@ Przykładowo porada pogodowa ,,It will rain till tomorrow morning'' zostanie pod
 Wielodniowe testy nie wykazały żadnych błędów przy stosowaniu powyższej metody transmisji i obsługi danych.
 
 \subsection{Zabezpieczenia i charakterystyka konfiguracyjna}
-Przy podłączeniu dowolnego urządzenia uruchamiany jest timer, który zezwala na pozostanie połączonym maksymalnie przez dwie sekundy. W praktyce pozwala to jedynie na odkrycie struktury urządzenia. W przypadku nie wpisania ustalonego hasła na charakterystykę konfiguracyjną, lub wpisaniu jakichkolwiek danych do systemu lustra przed podaniem go, połączenie zostaje natychmiast zerwane. Wpisanie hasła zatrzymuje timer i powoduje oczekiwanie na dane (np. w przypadku dłuższego niż zwykle pobierania danych z API).
+Przy podłączeniu dowolnego urządzenia uruchamiany jest timer, który zezwala na pozostanie połączonym maksymalnie przez dwie sekundy. W praktyce pozwala to jedynie na odkrycie struktury urządzenia. W przypadku nie wpisania ustalonego hasła (\textit{001220}) na charakterystykę konfiguracyjną, lub wpisaniu jakichkolwiek danych do systemu lustra przed podaniem go, połączenie zostaje natychmiast zerwane. Wpisanie hasła zatrzymuje timer i powoduje oczekiwanie na dane (np. w przypadku dłuższego niż zwykle pobierania danych z API).
 
-Ze względu na optymalizację poboru energii smartfona, wykorzystywane jest specjalne hasło pozwalające na natychmiastowe rozłączenie z urządzeniem z ominięciem ograniczeń systemowych.
+Ze względu na optymalizację poboru energii smartfona, wykorzystywane jest specjalne hasło pozwalające na natychmiastowe rozłączenie z urządzeniem z ominięciem ograniczeń systemu iOS.
 
 \subsection{Umieszczanie informacji na wyświetlaczu}
 Ze względu na rodzaj wyświetlacza oraz użytą komunikację do przesyłu danych po \textit{SPI}, dostęp do wyświetlacza odbywa się pixel po pixelu. By zachować możliwość wybiórczego umieszczania i czyszczenia informacji, wyświetlacz został podzielony na sekcje:
@@ -203,61 +202,57 @@ Aplikacja mobilna po uruchomieniu sprawdza, czy został już przeprowadzny proce
 \subsection{Konfiguracja}
 
 \begin{enumerate}
-	\item  Konfiguracja rozpoczyna się od powitania użytkownika oraz poinformowania go o wymaganym procesie konfiguracji. (Rys. \ref{setup1})
+	\item  Konfiguracja rozpoczyna się od powitania użytkownika oraz poinformowania go o wymaganym procesie konfiguracji. Następnie użytkownik proszony jest o podanie swojego imienia. Będzie ono użytę później, do wyświetlenia odpowiedniego powitania na lustrze. Obok imienia pojawi się również tekst zależny od pory dnia. (Rys. \ref{setup1})
 	\begin{figure}[H]
-		\includegraphics[width=0.3\textwidth,center]{ios-screens/setup1.png}
-		\caption {Wstęp do konfiguracji}
+		\centerline{
+			\includegraphics[width=0.4\textwidth]{ios-screens/setup1.png}
+			\includegraphics[width=0.4\textwidth]{ios-screens/setup2.png}
+	}
+		\caption {Wstęp do konfiguracji oraz pobranie imienia}
 		\label{setup1}
 	\end{figure}
 
-	\item Następnie użytkownik proszony jest o podanie swojego imienia. Będzie ono użytę później, do wyświetlenia odpowiedniego powitania na lustrze. Obok imienia pojawi się również tekst zależny od pory dnia. (Rys. \ref{setup2})
-	\begin{figure}[H]
-	\includegraphics[width=0.3\textwidth,center]{ios-screens/setup2.png}
-	\caption {Pobranie imienia}
-	\label{setup2}
-	\end{figure}
 
+	\newpage
 	\item Kolejnym krokiem jest wybór płci. Dzięki jej znajomości generowany jest jeden z wielu komplementów na temat użytkownika lustra. (Rys. \ref{setup3})
 	\begin{figure}[H]
-	\includegraphics[width=0.3\textwidth,center]{ios-screens/setup3.png}
+	\includegraphics[width=0.5\textwidth,center]{ios-screens/setup3.png}
 	\caption {Pobranie płci}
 	\label{setup3}
 	\end{figure}
-
-\item Czwarty ekran wyświetla trzy przyciski, dzięki którym użytkownik zezwala aplikacja na dostęp do określonych danych w swoim telefonie. Jest to niezbędny krok z powodu zabezpieczeń użytych w iOS. Po przekazaniu wszystkich zgód ekran automatycznie przechodzi do kolejnego, nie ma potrzeby zatwierdzania. (Rys. \ref{setup4})
+\newpage
+\item Czwarty ekran wyświetla trzy przyciski, dzięki którym użytkownik zezwala aplikacja na dostęp do określonych danych w swoim telefonie. Jest to niezbędny krok z powodu zabezpieczeń użytych w systemie iOS. Po przekazaniu wszystkich zgód ekran automatycznie przechodzi do kolejnego, nie ma potrzeby zatwierdzania. (Rys. \ref{setup4})
 \begin{figure}[H]
-	\includegraphics[width=0.3\textwidth,center]{ios-screens/setup4.png}
+	\includegraphics[width=0.5\textwidth,center]{ios-screens/setup4.png}
 	\caption {Prośba o zezwolenia}
 	\label{setup4}
 \end{figure}
-
-\item Ostatnim krokiem jest wskazanie aplikacji miejsca zamieszkania oraz pracy. Użyta została do tego mapa, która ułatwia ten proces. Automatycznie po wejściu w ekran pobierana jest lokalizaja użytkownika i wskazywane jest aktualne miejsce, w którym się znajduję. (Rys. \ref{setup5}) (Rys. \ref{setup6})
+\newpage
+\item Ostatnim krokiem jest wskazanie aplikacji miejsca zamieszkania oraz pracy. Użyta została do tego mapa, która ułatwia ten proces. Automatycznie po wejściu w ekran pobierana jest lokalizaja użytkownika i wskazywane jest aktualne miejsce, w którym się znajduje. (Rys. \ref{setup5})
 \begin{figure}[H]
-	\includegraphics[width=0.3\textwidth,center]{ios-screens/setup5.png}
-	\caption {Wskazanie na mapie miejsce zamieszkania}
+	\centerline{
+	\includegraphics[width=0.4\textwidth]{ios-screens/setup5.png}
+	\includegraphics[width=0.4\textwidth]{ios-screens/setup6.png}
+	}
+	\caption {Wskazanie na mapie miejsce zamieszkania oraz miejsca pracy}
 	\label{setup5}
 \end{figure}
-\begin{figure}[H]
-	\includegraphics[width=0.3\textwidth,center]{ios-screens/setup6.png}
-	\caption {Wskazanie na mapie miejsce pracy}
-	\label{setup6}
-\end{figure}
-
+\newpage
 \item Po wskazaniu miejsca zamieszkania i pracy aplikacja pokazuje ekran, w którym informuje o zakończeniu procesu konfiguracji. Naciśnięcie przycisku powoduje przejście do ekranu głównego. (Rys. \ref{setup7})
 \begin{figure}[H]
-	\includegraphics[width=0.3\textwidth,center]{ios-screens/setup7.png}
+	\includegraphics[width=0.5\textwidth,center]{ios-screens/setup7.png}
 	\caption {Potwierdzenia zakończenia procesu konfiguracji}
 	\label{setup7}
 \end{figure}
 
 \end{enumerate}
 
-
+\newpage
 \subsection{Ekran główny}
-Po zakończeniu procesu konfiguracji lub każdorazowym późniejszym wejściu w aplikację użytkownikowi ukazuję się ekran główny (Rys. \ref{main_ios}). Znajdują się na nim przyciski do włączenia skanera Bluetooth, wyłączenia go oraz do przeprowadzenia procesu konfiguracji ponownie. Przyciski do włączania i wyłączania skanera są niezbędne, aby aplikacja przeszła review podczas umieszczania jej w AppStore. Po włączeniu skanera, można już wyjść z aplikacji lub zablokować ekran - aplikacja będzie cały czas działała w tle.
+Po zakończeniu procesu konfiguracji lub każdorazowym późniejszym wejściu w aplikację użytkownikowi ukazuję się ekran główny (Rys. \ref{main_ios}). Znajdują się na nim przyciski do włączenia skanera Bluetooth, wyłączenia go oraz do przeprowadzenia procesu konfiguracji ponownie. Przyciski do włączania i wyłączania skanera są niezbędne, aby aplikacja przeszła review podczas umieszczania jej w sklepie AppStore. Po włączeniu skanera, można już wyjść z aplikacji lub zablokować ekran -- aplikacja będzie cały czas działała w tle.
 
 \begin{figure}[H]
-	\includegraphics[width=0.3\textwidth,center]{ios-screens/main.png}
+	\includegraphics[width=0.5\textwidth,center]{ios-screens/main.png}
 	\caption {Ekran główny}
 	\label{main_ios}
 \end{figure}
@@ -266,7 +261,7 @@ Po zakończeniu procesu konfiguracji lub każdorazowym późniejszym wejściu w 
 Z powodu bardzo restrykcyjnego podejścia systemu iOS do aplikacji działających w tle została ona maksymalnie zoptymalizowana, aby zużywała jak najmniej zasobów. Nadajnik Bluetooth w lustrze rozgłasza swoje pakiety z odpowienio niską mocą, aby połączenie odbywało się tylko wtedy, gdy lustro faktycznie jest w pobliżu telefonu. Dodatkowo Informacje pobierane z API są cachowane w celu optymalizacji zużycia energii. Po wykryciu nadajnika, aplikacja ma 10 sekund na połączenie się z lustrem oraz pobranie wszystkich danych. Aplikacja przed rozpoczęciem kolejnego skanowania oczekuje 4 sekundy po rozłączeniu, dzięki czemu powstaje okno czasowe, podczas którego kolejne urządzenie w zasięgu ma szansę na połączenie i wysłanie swoich informacji.
 
 \subsection{Połączenie oraz problem długiego czasu rozłączania w iOS}
-Po połączeniu z lustrem, aplikacja ma 2 sekundy na przesłanie odpowiedniego ciągu bajtów do charakterystyki konfiguracyjnej. Jeśli tego nie zrobi zostanie automatycznie rozłączona, a żadne dane przez nią przesłane nie zostaną wyświetlone na lustrze. Dodając do tego bardzo słabą moc nadajnika całkowicie zabezpiecza to możliwość nieautoryzowanego użycia lustra. Znanym problem, który występuję w systemie iOS jest jego czas rozłączania się z urządzeniem. Po wydaniu komendy rozłączenia nie jest to robione natychmiastowo, lecz dopiero po około 7 sekundach. Rozwiązaliśmy ten problem wpisaniem do charakterystyki konfiguracyjnej odpowiedniego ciągu bajtów, który zaraz po ich otrzymaniu rozłącza urządzenie. Rozłącznie po stronie sprzętu realizowane jest natychmiast, stąd nie występuje problem długiego rozłączania.
+Po połączeniu z lustrem, aplikacja ma 2 sekundy na przesłanie odpowiedniego ciągu bajtów do charakterystyki konfiguracyjnej. Jeśli tego nie zrobi zostanie automatycznie rozłączona, a żadne dane przez nią przesłane nie zostaną wyświetlone na lustrze. Dodając do tego obniżoną moc nadajnika całkowicie zabezpiecza to możliwość nieautoryzowanego użycia lustra przez osoby trzecie. Znanym problem, który występuję w systemie iOS jest jego czas rozłączania się z urządzeniem. Po wydaniu komendy rozłączenia nie jest to robione natychmiastowo, lecz dopiero po około 7 sekundach. Rozwiązaliśmy ten problem wpisaniem do charakterystyki konfiguracyjnej odpowiedniego ciągu bajtów, który zaraz po ich otrzymaniu rozłącza urządzenie. Rozłącznie po stronie sprzętu realizowane jest natychmiast, stąd nie występuje problem długiego rozłączania.
 
 \subsection{Programowanie funkcyjne}
 Aplikacja pobiera dane asynchronicznie, jest to wykonane w kodzie w bardzo schludny sposób dzięki zastosowaniu programowania funkcyjnego. Wykonane zostało to z użyciem biblioteki RxSwift. Poniżej fragment kodu ilustrujący, jak łatwo połączyć kilka różnych informacji pobieranych asynchroniczne w jeden element, który można przesłać do urządzenia. Reactive Functional Programming to w ostatnich czasach bardzo popularne i pożadne podejście podczas programowania aplikacji pobilnych.
@@ -316,14 +311,17 @@ pod install
 Jeśli komenda nie jest dostępna należy zainstalować oprogramowanie CocoaPods
 
 \subsection{Embedded}
-Tutaj to pan kopiujesz hexa i działa, heja, dawać iPada.
+Najprostszym sposobem umieszczenia oprogramowania na DevKicie nRF52 jest skopiowanie pliku \textit{nRF\_Reflekto.hex} do urządzenia J-LINK wyświetlonego przez komputer. Folder z wygenerowanymi plikami został specjalnie pozostawiony w repozytorium: \begin{lstlisting}
+/reflekto-embedded/nRF_Reflekto_Services/Output/nrf52832_xxaa/Exe/
+\end{lstlisting} 
+Wymagane jest wcześniejsze posiadanie zainstalowanego SoftDevice na płytce. Można tego dokonać poprzez apliakcję nRFgo Studio. Aplikacja była rozwijana i testowana z użyciem SoftDevice
+\begin{lstlisting}
+s132_nrf52_4.0.2_softdevice.hex
+\end{lstlisting}
+
 	
 \section{Podsumowanie}
-	Projekt rozwijany jest z użyciem systemu kontroli wersji GitHub. Aktualne postępy dosępne są pod adresem: \url{https://github.com/Solstico}
-	
-	
-	
-	
+Projekt rozwijany był z użyciem systemu kontroli wersji GitHub. Wszystkie postępy prac dostępne są pod adresem: \url{https://github.com/Solstico}
 	
 	
 \end{document}
